@@ -29,6 +29,7 @@
  */
 
 module.exports = {
+  cli: require('./cli.js'),
   utils: require('./utils.js'),
   configuration: require('./configuration.js'),
   packages: require('./packages.js'),
