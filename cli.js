@@ -256,4 +256,6 @@ const tasks = {
 
 };
 
-Object.keys(tasks).forEach((name) => ygor.task(name, tasks[name]));
+module.exports = function() {
+  Object.keys(tasks).forEach((name) => ygor.task(name, tasks[name]));
+};
