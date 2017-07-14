@@ -1,0 +1,31 @@
+{
+  "name": "osjs-build",
+  "version": "0.5.0",
+  "description": "OS.js Build System",
+  "url": "https://www.os-js.org",
+  "email": "andersevenrud@gmail.com",
+  "license": "BSD-2-Clause",
+  "contributors": [
+    {
+      "name": "Anders Evenrud",
+      "email": "andersevenrud@gmail.com"
+    }
+  ],
+  "keywords": [
+    "os.js",
+    "web desktop",
+    "cloud desktop"
+  ],
+  "bugs": {
+    "url": "https://github.com/os-js/osjs-build/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/os-js/osjs-build.git"
+  },
+  "peerDependencies": {
+    "webpack": "^3.1.0"
+  },
+  "dependencies": {
+  }
+}

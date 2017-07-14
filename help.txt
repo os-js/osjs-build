@@ -1,0 +1,26 @@
+OS.js build system and task runner
+
+More information: https://os.js.org/manual/build/cli/
+
+The --debug flag enabled full debugging support (better devtools) and optimized caching.
+
+Common build flags: [--no-minimize] [--no-sourcemaps] [--devtools=]
+
+Loglevels: INFO: 1, WARN: 2, WARNING: 2, ERROR: 3, VERBOSE: 8 (default: 7)
+
+Building:
+  watch [--debug] [--package=REPO/NAME]
+  build [--debug] [--clean]
+  build:config
+  build:manifest
+  build:core [--debug] [--clean] [--no-assets]
+  build:package --name=NAME [--debug] [--clean]
+  build:packages [--debug] [--clean] [--repositories=]
+
+Configuration:
+  config:get --name=KEY
+  config:set --name=KEY --value=VALUE [--out=FILE]
+  config:set [--name=KEY] --import=FILE
+
+Server:
+  run [--port=N] [--loglevel=N] [--debug]
