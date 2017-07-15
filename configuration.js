@@ -245,13 +245,6 @@ const buildClientConfiguration = (cfg, cli) => new Promise((resolve, reject) => 
   settings.Debug = cli.option('debug') === true;
   settings.Broadway = cfg.broadway;
 
-  if ( cfg.broadway.enabled ) {
-    preloads.push({
-      'type': 'javascript',
-      'src': '/vendor/zlib.js'
-    });
-  }
-
   othemes.getMetadata(cfg, cli).then((themes) => {
     settings.Fonts.list = themes.fonts.concat(settings.Fonts.list);
     settings.Styles = themes.styles;
