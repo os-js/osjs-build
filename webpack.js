@@ -197,6 +197,10 @@ const createConfiguration = (options) => new Promise((resolve, reject) => {
         plugins: getPlugins(cfg, options),
         devtool: options.devtool,
 
+        watchOptions: {
+          ignored: /\.tmp$/
+        },
+
         resolve: {
           modules: [
             path.join(ROOT, 'src/client/javascript')
