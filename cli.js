@@ -249,6 +249,10 @@ const tasks = {
     return ygor.shell(['node', exe, args].join(' '));
   },
 
+  'generate:package': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
+    return opkg.generatePackage(cfg, cli, ygor);
+  }),
+
   'help': () => {
     console.log(fs.readFileSync(path.join(__dirname, 'help.txt'), 'utf-8'));
     return true;

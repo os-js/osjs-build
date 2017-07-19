@@ -22,5 +22,8 @@ Configuration:
   config:set --name=KEY --value=VALUE [--out=FILE]
   config:set [--name=KEY] --import=FILE
 
+Generation:
+  generate:package --name=REPO/NAME [--type=application] [--dest]
+
 Server:
   run [--port=N] [--loglevel=N] [--debug]

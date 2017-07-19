@@ -263,6 +263,55 @@ const buildPackages = (cfg, cli, ygor) => new Promise((resolve, reject) => {
   }).catch(reject);
 });
 
+/**
+ * Generates a package
+ * @param {Object} cfg Configuration tree
+ * @param {Object} cli CLI wrapper
+ * @param {Ojbect} ygor Task builder instance
+ * @return {Promise}
+ */
+const generatePackage = (cfg, cli, ygor) => new Promise((resolve, reject) => {
+  const type = cli.option('type') || 'application';
+
+  let fqpn = cli.option('name') || '';
+  let split = fqpn.split('/');
+
+  if ( !fqpn || !type || split.length !== 2 ) {
+    return reject('Invalid package name or type');
+  }
+
+  const repo = split[0].replace(/[^A-z0-9\._]/g, '').replace(/\s+/g, ' ');
+  const name = split[1].replace(/[^A-z0-9\._]/g, '').replace(/\s+/g, ' ');
+  fqpn = [repo, name].join('/');
+
+  let dest = cli.option('dest') || path.join(ROOT, 'dist', 'packages');
+  dest = path.join(dest, fqpn);
+
+  if ( fs.existsSync(dest) ) {
+    return reject(new Error(dest + ' already exists'));
+  }
+
+  const src = path.join(ROOT, 'src', 'templates', 'package', type);
+  if ( !fs.existsSync(src) ) {
+    return reject(new Error('No such package type'));
+  }
+
+  fs.copySync(src, dest);
+
+  return glob(path.join(dest, '*.*')).then((files) => {
+    files.forEach((f) => {
+      let r = fs.readFileSync(f, 'utf-8');
+
+      r = r.replace(/EXAMPLE/g, name);
+
+      fs.writeFileSync(f, r);
+    });
+
+    console.log('Package', dest, 'generated');
+    return resolve(true);
+  }).catch(reject);
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // EXPORTS
 ///////////////////////////////////////////////////////////////////////////////
@@ -270,6 +319,7 @@ const buildPackages = (cfg, cli, ygor) => new Promise((resolve, reject) => {
 module.exports = {
   getMetadata,
   getPackageMetadata,
+  generatePackage,
   readMetadataFile,
   buildClientManifest,
   buildServerManifest,
