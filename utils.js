@@ -32,6 +32,7 @@ const qs = require('querystring');
 const path = require('path');
 
 const ROOT = process.env.OSJS_ROOT || path.dirname(process.argv[1]);
+const ISWIN = /^win/.test(process.platform);
 
 ///////////////////////////////////////////////////////////////////////////////
 // HELPERS
@@ -177,11 +178,30 @@ const execWebpack = (cli, ygor, cwd, params) => {
   });
 };
 
+/**
+ * Fixes problems with windows paths
+ * @param {String} str A path of sorts
+ * @param {Boolean} [slashes=false] Reverse slashes
+ * @return {String}
+ */
+const fixWinPath = (str, slashes) => {
+  if ( typeof str === 'string' && ISWIN ) {
+    str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+    if ( slashes ) {
+      str = str.replace(/(["\s'$`\\])/g, '\\$1').replace(/\\+/g, '/');
+    }
+  }
+
+  return str;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // EXPORTS
 ///////////////////////////////////////////////////////////////////////////////
 
 module.exports = {
+  fixWinPath,
   mutateManifest,
   checkEnabledState,
   getPackagePaths,

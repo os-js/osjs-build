@@ -165,16 +165,6 @@ function parseOptions(inp) {
   return options;
 }
 
-/*
- * Work around the "is not an absolute path" for windows
- */
-function windowsWorkaround(str) {
-  if ( /^win/.test(process.platform) ) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  }
-  return str;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // API
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,16 +292,16 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
 
     const packageRoot = path.dirname(metadataFile); // FIXME
     const packageEntry = {
-      main: metadata.preload.map((preload) => windowsWorkaround(preload.src))
+      main: metadata.preload.map((preload) => outils.fixWinPath(preload.src))
     };
 
     createConfiguration(options).then((result) => {
       const wcfg = outils.mergeObject(result.webpack, {
         resolve: {
           modules: [
-            windowsWorkaround(path.join(ROOT, 'src/client/javascript')),
-            windowsWorkaround(path.join(ROOT, 'node_modules')),
-            windowsWorkaround(packageRoot)
+            outils.fixWinPath(path.join(ROOT, 'src/client/javascript')),
+            outils.fixWinPath(path.join(ROOT, 'node_modules')),
+            outils.fixWinPath(packageRoot)
           ]
         },
 
@@ -319,7 +309,7 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
 
         output: {
           publicPath: './packages/' + metadata.path,
-          path: windowsWorkaround(dest)
+          path: outils.fixWinPath(dest)
         },
 
         externals: {

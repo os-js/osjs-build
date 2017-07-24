@@ -37,7 +37,6 @@ const opkg = require('./packages.js');
 const othemes = require('./themes.js');
 const outils = require('./utils.js');
 
-const ISWIN = /^win/.test(process.platform);
 const ROOT = process.env.OSJS_ROOT || path.dirname(process.argv[1]);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,18 +56,6 @@ const makedict = (list, fn) => {
     result[data[0]] = data[1];
   });
   return result;
-};
-
-/**
- * Fixes problems with windows paths
- * @param {String} str A path of sorts
- * @return {String}
- */
-const fixWinPath = (str) => {
-  if ( typeof str === 'string' && ISWIN ) {
-    return str.replace(/(["\s'$`\\])/g, '\\$1').replace(/\\+/g, '/');
-  }
-  return str;
 };
 
 function setConfigPath(key, value, isTree, outputFile) {
@@ -172,7 +159,7 @@ const resolveConfigurationVariables = (object) => {
   ];
 
   // Resolves all "%something%" config entries
-  let tmpFile = JSON.stringify(object).replace(/%ROOT%/g, fixWinPath(ROOT));
+  let tmpFile = JSON.stringify(object).replace(/%ROOT%/g, outils.fixWinPath(ROOT, true));
   const tmpConfig = JSON.parse(tmpFile);
 
   const words = tmpFile.match(/%([A-z0-9_\-\.]+)%/g).filter((() => {
