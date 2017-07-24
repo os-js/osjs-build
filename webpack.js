@@ -299,8 +299,6 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
       const wcfg = outils.mergeObject(result.webpack, {
         resolve: {
           modules: [
-            outils.fixWinPath(path.join(ROOT, 'src/client/javascript')),
-            outils.fixWinPath(path.join(ROOT, 'node_modules')),
             outils.fixWinPath(packageRoot)
           ]
         },
