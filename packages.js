@@ -243,7 +243,7 @@ const buildPackage = (cfg, cli, ygor, name) => new Promise((resolve, reject) => 
   getPackageMetadata(cfg, name).then((metadata) => {
     console.info('Building', colors.green(metadata.path));
 
-    outils.execWebpack(cli, ygor, path.join(ROOT, metadata._src))
+    outils.execWebpack(cli, ygor, path.resolve(ROOT, metadata._src))
       .then(resolve).catch(reject);
   }).catch(reject);
 });
