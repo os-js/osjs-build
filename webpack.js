@@ -138,14 +138,16 @@ function parseOptions(inp) {
   const isNumeric = (n) => !isNaN(parseFloat(n)) && isFinite(n);
   const debugMode = process.env.OSJS_DEBUG === 'true';
 
-  const options = Object.assign({}, inp, env, {
+  const defaults = {
     debug: debugMode,
     minimize: !debugMode,
     sourcemaps: true,
     exclude: /(node_modules|bower_components)/,
     outputSourceMap: '[file].map',
     outputFileName: '[name].js'
-  });
+  };
+
+  const options = Object.assign({}, defaults, env, inp);
 
   // Our values does not come back identical :/
   Object.keys(options).forEach((k) => {
