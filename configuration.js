@@ -58,7 +58,7 @@ const makedict = (list, fn) => {
   return result;
 };
 
-function setConfigPath(key, value, isTree, outputFile) {
+function setConfigPath(key, value, isTree, outputFile, guess) {
   let cfgPath = path.join(ROOT, 'src', 'conf', '900-custom.json');
   if ( outputFile ) {
     const confDir = path.join(ROOT, 'src', 'conf');
@@ -73,7 +73,7 @@ function setConfigPath(key, value, isTree, outputFile) {
   try {
     const result = sjc.setJSON(conf, isTree ? null : key, value, {
       prune: true,
-      guess: true
+      guess: typeof guess === 'undefined' || guess === true
     });
 
     fs.writeFileSync(cfgPath, JSON.stringify(result, null, 2));
@@ -143,6 +143,75 @@ const setConfiguration = (key, value, importFile, outputFile) => {
  * @return {Object}
  */
 const getConfiguration = (config, query, defaultValue) => sjc.getJSON(config, query, defaultValue);
+
+/**
+ * Adds something to an array or object in the configuration tree
+ *
+ * @param {Object} config Configuration tree
+ * @param {String} query Query
+ * @param {String} [key] The key
+ * @param {Mixed} value The value
+ * @return {Object}
+ */
+const addConfiguration = (config, query, key, value) => new Promise((resolve, reject) => {
+  let result;
+  try {
+    result = getConfiguration(config, query);
+  } catch ( e ) {}
+
+  if ( typeof result === 'undefined' || result === null ) {
+    result = typeof key !== 'undefined' ? {} : [];
+  }
+
+  if ( typeof result !== 'object' ) {
+    return reject(new Error('Invalid entry'));
+  }
+
+  if ( result instanceof Array ) {
+    if ( result.indexOf(value) === -1 ) {
+      result.push(value);
+    } else if ( typeof key !== 'undefined' ) {
+      result[key] = value;
+    }
+  } else {
+    result[key] = value;
+  }
+
+  return resolve(setConfigPath(query, result, false, null, false));
+});
+
+/**
+ * Remove something from an array or object in the configuration tree
+ *
+ * @param {Object} config Configuration tree
+ * @param {String} query Query
+ * @param {String} [key] The key
+ * @param {Mixed} value The value
+ * @return {Object}
+ */
+const removeConfiguration = (config, query, key, value) => new Promise((resolve, reject) => {
+  let result;
+  try {
+    result = getConfiguration(config, query);
+  } catch ( e ) {}
+
+  if ( result !== null && typeof result === 'object' ) {
+    if ( result instanceof Array ) {
+      const idx = typeof key === 'number' ? key : result.indexOf(value);
+      if ( idx  !== -1 ) {
+        result.splice(idx, 1);
+      }
+    } else {
+      if ( typeof result[key] !== 'undefined' ) {
+        delete result[key];
+      }
+    }
+
+    return resolve(setConfigPath(query, result, false, null, false));
+  }
+
+  return reject(new Error('Invalid entry'));
+});
 
 /**
  * Resolves variables inside the configuration tree
@@ -311,6 +380,8 @@ module.exports = {
   readConfigurationTree,
   getConfiguration,
   setConfiguration,
+  addConfiguration,
+  removeConfiguration,
   buildClientConfiguration,
   buildServerConfiguration
 };

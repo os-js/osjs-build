@@ -18,9 +18,13 @@ Building:
   build:packages [--debug] [--clean] [--repositories=]
 
 Configuration:
-  config:get --name=KEY
-  config:set --name=KEY --value=VALUE [--out=FILE]
-  config:set [--name=KEY] --import=FILE
+  config:get --name=NAME
+  config:set --name=NAME --value=VALUE [--out=FILE]
+  config:set [--name=NAME] --import=FILE
+  config:add --name=NAME --value=VALUE
+  config:add --name=NAME --key=KEY --value=VALUE
+  config:remove --name=NAME --value=VALUE
+  config:remove --name=NAME --key=KEY
 
 Generation:
   generate:package --name=REPO/NAME [--type=application] [--dest]

@@ -94,6 +94,30 @@ const tasks = {
     }).catch(reject);
   }),
 
+  'config:add': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
+    const name = cli.option('name');
+    ocfg.addConfiguration(cfg,
+                          name,
+                          cli.option('key'),
+                          cli.option('value')
+    ).then((value) => {
+      console.log(name, '=', value);
+      resolve();
+    }).catch(reject);
+  }),
+
+  'config:remove': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
+    const name = cli.option('name');
+    ocfg.removeConfiguration(cfg,
+                             name,
+                             cli.option('key'),
+                             cli.option('value')
+    ).then((value) => {
+      console.log(name, '=', value);
+      resolve();
+    }).catch(reject);
+  }),
+
   'config:get': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
     const name = cli.option('name');
     if ( name ) {
