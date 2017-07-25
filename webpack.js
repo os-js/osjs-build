@@ -104,9 +104,11 @@ function getPlugins(cfg, options) {
       }));
     } else {
       plugins.unshift(new CleanWebpackPlugin([
-        path.join(ROOT, 'dist', '*')
+        'dist/themes',
+        'dist/*.*'
       ], {
         root: ROOT,
+        verbose: options.verbose,
         exclude: ['packages', 'vendor', '.htaccess', '.gitignore']
       }));
     }
@@ -136,15 +138,14 @@ function parseOptions(inp) {
   const isNumeric = (n) => !isNaN(parseFloat(n)) && isFinite(n);
   const debugMode = process.env.OSJS_DEBUG === 'true';
 
-  const options = Object.assign({
+  const options = Object.assign({}, inp, env, {
     debug: debugMode,
     minimize: !debugMode,
     sourcemaps: true,
-    devtool: 'cheap-source-map',
     exclude: /(node_modules|bower_components)/,
     outputSourceMap: '[file].map',
     outputFileName: '[name].js'
-  }, env, inp);
+  });
 
   // Our values does not come back identical :/
   Object.keys(options).forEach((k) => {
@@ -158,8 +159,9 @@ function parseOptions(inp) {
     }
   });
 
-  if ( options.debug && !inp.devtool ) {
-    options.devtool = 'source-map';
+  if ( !options.devtool ) {
+    //options.devtool = options.debug ? 'source-map' : 'cheap-source-map';
+    options.devtool = options.debug ? 'inline-source-map' : 'source-map';
   }
 
   return options;
