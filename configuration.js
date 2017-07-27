@@ -28,6 +28,7 @@
  * @licence Simplified BSD License
  */
 
+const Promise = require('bluebird');
 const sjc = require('simplejsonconf');
 const path = require('path');
 const glob = require('glob-promise');
@@ -218,7 +219,7 @@ const removeConfiguration = (config, query, key, value) => new Promise((resolve,
  * @param {Object} object The temporary configuration tree
  * @return {Object}
  */
-const resolveConfigurationVariables = (object) => {
+const resolveConfigurationVariables = (object, overlay) => {
   const safeWords = [
     '%VERSION%',
     '%DIST%',
@@ -228,16 +229,20 @@ const resolveConfigurationVariables = (object) => {
   ];
 
   // Resolves all "%something%" config entries
-  let tmpFile = JSON.stringify(object).replace(/%ROOT%/g, outils.fixWinPath(ROOT, true));
-  const tmpConfig = JSON.parse(tmpFile);
+  let tmpFile = JSON.stringify(object);
+  tmpFile = tmpFile.replace(/%ROOT%/g, outils.fixWinPath(ROOT, true));
+  if ( overlay ) {
+    tmpFile = tmpFile.replace(/%OVERLAY%/g, outils.fixWinPath(overlay, true));
+  }
 
-  const words = tmpFile.match(/%([A-z0-9_\-\.]+)%/g).filter((() => {
+  const words = (tmpFile.match(/%([A-z0-9_\-\.]+)%/g) || []).filter((() => {
     let seen = {};
     return function(element, index, array) {
       return !(element in seen) && (seen[element] = 1);
     };
   })());
 
+  const tmpConfig = JSON.parse(tmpFile);
   words.forEach((w) => {
     const p = w.replace(/%/g, '');
     const u = /^[A-Z]*$/.test(p);
@@ -259,20 +264,39 @@ const resolveConfigurationVariables = (object) => {
 const readConfigurationTree = () => new Promise((resolve, reject) => {
   let object = {};
 
-  const basePath = path.join(ROOT, 'src', 'conf');
-  glob(basePath + '/*.json').then((files) => {
+  const _read = (p, r) => {
+    return new Promise((yes, no) => {
+      glob(p + '/*.json').then((files) => {
+        files.forEach((file) => {
+          try {
+            let json = fs.readJsonSync(file);
+            if ( r ) {
+              json = resolveConfigurationVariables(json, r);
+            }
+            object = outils.mergeObject(object, json);
+          } catch ( e ) {
+            console.warn('Failed parsing', path.basename(file), e);
+          }
+        });
 
-    files.forEach((file) => {
-      try {
-        const json = fs.readJsonSync(file);
-        object = outils.mergeObject(object, json);
-      } catch ( e ) {
-        console.warn('Failed parsing', path.basename(file), e);
-      }
+        yes();
+      }).catch(no);
     });
+  };
 
-    const finalConfiguration = Object.freeze(resolveConfigurationVariables(object));
-    resolve(finalConfiguration);
+  const basePath = path.join(ROOT, 'src', 'conf');
+  _read(basePath).then(() => {
+    const overlays = object.overlays || [];
+    const paths = overlays.map((f) => {
+      return path.resolve(ROOT, f, 'conf');
+    }).filter((f) => fs.existsSync(f));
+
+    Promise.each(paths, (iter) => {
+      return _read(iter, path.dirname(iter));
+    }).then(() => {
+      const finalConfiguration = Object.freeze(resolveConfigurationVariables(object));
+      resolve(finalConfiguration);
+    }).catch(reject);
   }).catch(reject);
 });
 
@@ -362,6 +386,7 @@ const buildServerConfiguration = (cfg, cli) => new Promise((resolve, reject) => 
       }
     });
 
+    settings.overlays = cfg.overlays;
     settings.mimes = cfg.mime.mapping;
     settings.broadway = cfg.broadway;
     settings.vfs.maxuploadsize = cfg.client.VFS.MaxUploadSize;

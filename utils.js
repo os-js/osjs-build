@@ -28,6 +28,7 @@
  * @licence Simplified BSD License
  */
 
+const fs = require('fs-extra');
 const qs = require('querystring');
 const path = require('path');
 
@@ -68,33 +69,6 @@ function mutateManifest(packages) {
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Reads and iterates over overlay paths
- * @param {Object} cfg Configuration tree
- * @param {String} key Entry to fetch
- * @param {Function} onentry Iterative function (map function)
- * @return {Array}
- */
-const readOverlayPaths = (cfg, key, onentry) => {
-  onentry = onentry || ((p) => path.resolve(ROOT, p));
-
-  const overlays = cfg.build.overlays;
-  const paths = [];
-
-  if ( overlays ) {
-    Object.keys(overlays).forEach((n) => {
-      const overlay = overlays[n];
-      if ( overlay[key] instanceof Array ) {
-        overlay[key].forEach((e, i) => {
-          paths.push(onentry(e, i));
-        });
-      }
-    });
-  }
-
-  return paths;
-};
-
-/**
  * Check if given package is enabled or not
  * @param {Array} enabled All forcefully enabled packages
  * @param {Array} disabled All forcefully disabled packages
@@ -125,9 +99,13 @@ function checkEnabledState(enabled, disabled, meta) {
  * @return {Array}
  */
 function getPackagePaths(cfg, repo) {
-  return [
+  const base = [
     path.join(ROOT, 'src/packages', repo)
-  ].concat(readOverlayPaths(cfg, 'packages'));
+  ];
+
+  return base.concat(cfg.overlays.map((f) => {
+    return path.resolve(ROOT, f, 'packages', repo);
+  }).filter((f) => fs.existsSync(f)));
 }
 
 /**
@@ -205,7 +183,6 @@ module.exports = {
   mutateManifest,
   checkEnabledState,
   getPackagePaths,
-  readOverlayPaths,
   mergeObject,
   execWebpack
 };
