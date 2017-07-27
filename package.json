@@ -1,6 +1,6 @@
 {
   "name": "osjs-build",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "OS.js Build System",
   "url": "https://www.os-js.org",
   "email": "andersevenrud@gmail.com",

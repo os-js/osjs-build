@@ -284,7 +284,7 @@ const generatePackage = (cfg, cli, ygor) => new Promise((resolve, reject) => {
   const name = split[1].replace(/[^A-z0-9\._]/g, '').replace(/\s+/g, ' ');
   fqpn = [repo, name].join('/');
 
-  let dest = cli.option('dest') || path.join(ROOT, 'dist', 'packages');
+  let dest = cli.option('dest') || path.join(ROOT, 'src', 'packages');
   dest = path.join(dest, fqpn);
 
   if ( fs.existsSync(dest) ) {
