@@ -396,7 +396,11 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
     };
 
     createConfiguration(options).then((result) => {
+      options = result.options;
+
       const publicPath = result.settings.build.webpack.output.publicPath || '';
+      const root = 'packages/' + metadata.path + '/';
+
       const wcfg = outils.mergeObject(result.config, {
         resolve: {
           modules: [
@@ -408,8 +412,10 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
         entry: packageEntry,
 
         output: {
-          publicPath: publicPath + 'packages/' + metadata.path + '/',
-          path: outils.fixWinPath(dest)
+          publicPath: publicPath,
+          path: outils.fixWinPath(dest),
+          sourceMapFilename: root + options.outputSourceMap,
+          filename: root + options.outputFileName
         },
 
         externals: {
