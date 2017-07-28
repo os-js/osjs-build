@@ -144,7 +144,7 @@ const tasks = {
   'build:themes': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
     console.info('Building', colors.blue('themes'));
 
-    const dir = path.resolve(ROOT, 'src/client/themes');
+    const dir = path.resolve(ROOT, 'src/themes');
     return outils.execWebpack(cli, ygor, dir, '--progress');
   }),
 
@@ -201,7 +201,7 @@ const tasks = {
 
     if ( cli.themes ) {
       console.info('Starting', colors.blue('watch'), 'for', colors.green('themes'));
-      const dir = path.resolve(ROOT, 'src/client/themes');
+      const dir = path.resolve(ROOT, 'src/themes');
       return outils.execWebpack(cli, ygor, dir, '--watch');
     }
 
