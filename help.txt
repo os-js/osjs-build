@@ -1,24 +1,24 @@
-OS.js build system and task runner
+OS.js Task and Build system
 
-More information: https://os.js.org/manual/build/cli/
+Copyright (c) 2011-2017 Anders Evenrud <andersevenrud@gmail.com>
 
-The --debug flag enabled full debugging support (better devtools) and optimized caching.
+Common flags:
+  --debug           Enabled extended debug support (faster build)
+  --clean           Cleans up destination before building
+  --no-minimize     Do not minimize, even without --debug
+  --no-sourcemaps   Do not generate sourcemaps
+  --devtool         Set the Webpack devtool option
 
-Common build flags: [--no-minimize] [--no-sourcemaps] [--devtools=]
-
-Loglevels: INFO: 1, WARN: 2, WARNING: 2, ERROR: 3, VERBOSE: 8 (default: 7)
-
-Building:
-  watch [--debug] [--package=REPO/NAME]
-  build [--debug] [--clean]
+Build tasks:
+  build
   build:config
   build:manifest
-  build:core [--debug] [--clean]
-  build:themes [--debug] [--clean]
-  build:package --name=NAME [--debug] [--clean]
-  build:packages [--debug] [--clean] [--repositories=]
+  build:core
+  build:themes
+  build:package --name=NAME
+  build:packages [--repositories=]
 
-Configuration:
+Configuration tasks:
   config:get --name=NAME
   config:set --name=NAME --value=VALUE [--out=FILE]
   config:set [--name=NAME] --import=FILE
@@ -28,9 +28,10 @@ Configuration:
   config:remove --name=NAME --key=KEY
   config:mount --name=NAME --description=DESC --path=PATH [--ro] [--transport=NAME]
 
-Generation:
+Generation tasks:
   generate:package --name=REPO/NAME [--type=application] [--dest]
   generate:config --type=TYPE --env=ENV --out=DEST
 
-Server:
-  run [--port=N] [--loglevel=N] [--debug]
+Misc tasks:
+  run [--port=N] [--loglevel=0,1,2]
+  watch [--package=REPO/NAME] [--themes]
