@@ -393,7 +393,7 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
     };
 
     createConfiguration(options).then((result) => {
-      const publicPath = result.webpack.output.publicPath;
+      const publicPath = result.cfg.build.webpack.output.publicPath || '';
       const wcfg = outils.mergeObject(result.webpack, {
         resolve: {
           modules: [
