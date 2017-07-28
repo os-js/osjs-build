@@ -306,7 +306,7 @@ const createConfiguration = (options) => new Promise((resolve, reject) => {
 
         resolve: {
           modules: [
-            path.join(ROOT, 'src/client/javascript')
+            path.resolve(ROOT, 'src/client/javascript')
           ]
         },
 
@@ -362,6 +362,9 @@ const createConfiguration = (options) => new Promise((resolve, reject) => {
                   {
                     loader: 'less-loader',
                     options: {
+                      paths: [
+                        path.resolve(ROOT, 'src/client/stylesheets')
+                      ],
                       sourceMap: options.sourcemaps
                     }
                   }
