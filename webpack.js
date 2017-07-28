@@ -387,12 +387,13 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
   opkg.readMetadataFile(metadataFile).then((metadata) => {
     const dest = path.join(ROOT, 'dist/packages', metadata.path);
 
-    const packageRoot = path.dirname(metadataFile); // FIXME
+    const packageRoot = path.dirname(metadataFile);
     const packageEntry = {
       main: metadata.preload.map((preload) => outils.fixWinPath(preload.src))
     };
 
     createConfiguration(options).then((result) => {
+      const publicPath = result.webpack.output.publicPath;
       const wcfg = outils.mergeObject(result.webpack, {
         resolve: {
           modules: [
@@ -404,7 +405,7 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
         entry: packageEntry,
 
         output: {
-          publicPath: 'packages/' + metadata.path + '/',
+          publicPath: publicPath + 'packages/' + metadata.path,
           path: outils.fixWinPath(dest)
         },
 
