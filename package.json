@@ -1,6 +1,6 @@
 {
   "name": "osjs-build",
-  "version": "0.6.9",
+  "version": "0.7.0",
   "description": "OS.js Build System",
   "url": "https://www.os-js.org",
   "email": "andersevenrud@gmail.com",
@@ -22,9 +22,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/os-js/osjs-build.git"
-  },
-  "peerDependencies": {
-    "webpack": "^3.1.0"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
