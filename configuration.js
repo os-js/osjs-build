@@ -397,6 +397,54 @@ const buildServerConfiguration = (cfg, cli) => new Promise((resolve, reject) => 
   }).catch(reject);
 });
 
+/**
+ * Adds a mountpoint
+ *
+ * @param {Object} cfg Configuration tree
+ * @param {Object} cli CLI wrapper
+ * @return {Promise}
+ */
+const addMountpoint = (cfg, cli) => new Promise((resolve, reject) => {
+  const template = {
+    client: {
+      VFS: {
+        Mountpoints: {}
+      }
+    },
+    server: {
+      vfs: {
+        mounts: {}
+      }
+    }
+  };
+
+  const name = cli.option('name');
+  const desc = cli.option('description');
+  const title = cli.option('title', name);
+  const transport = cli.option('transport', 'osjs');
+  const dest = cli.option('path');
+  const ro = cli.option('ro') || false;
+
+  if ( !name || !transport || !dest ) {
+    return reject('Missing option(s)');
+  }
+
+  template.client.VFS.Mountpoints[name] = {
+    enabled: true,
+    title: title,
+    description: desc,
+    transport: transport,
+    readOnly: ro
+  };
+
+  template.server.vfs.mounts[name] = {
+    destination: dest,
+    ro: ro
+  };
+
+  return resolve(setConfigPath(null, template, true));
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // EXPORTS
 ///////////////////////////////////////////////////////////////////////////////
@@ -406,6 +454,7 @@ module.exports = {
   getConfiguration,
   setConfiguration,
   addConfiguration,
+  addMountpoint,
   removeConfiguration,
   buildClientConfiguration,
   buildServerConfiguration

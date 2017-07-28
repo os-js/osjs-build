@@ -83,6 +83,10 @@ const newTask = (cli, fn) => new Promise((resolve, reject) => {
  */
 const tasks = {
 
+  'config:mount': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
+    ocfg.addMountpoint(cfg, cli).then(resolve).catch(reject);
+  }),
+
   'config:set': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
     const name = cli.option('name');
     ocfg.setConfiguration(name,
