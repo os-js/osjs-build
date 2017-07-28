@@ -1,6 +1,6 @@
 {
   "name": "osjs-build",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "description": "OS.js Build System",
   "url": "https://www.os-js.org",
   "email": "andersevenrud@gmail.com",
@@ -50,12 +50,12 @@
     "webpack": "^3.4.1",
     "fs-extra": "^3.0.1",
     "glob": "^7.1.2",
-    "glob-promise": "^3.1.0"
-  },
-  "devDependencies": {
+    "glob-promise": "^3.1.0",
     "eslint": "^4.3.0",
     "chai": "^4.0.2",
     "chai-as-promised": "^7.1.1",
     "mocha": "^3.4.2"
+  },
+  "devDependencies": {
   }
 }
