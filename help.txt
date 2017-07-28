@@ -29,6 +29,7 @@ Configuration:
 
 Generation:
   generate:package --name=REPO/NAME [--type=application] [--dest]
+  generate:config --type=TYPE --env=ENV --out=DEST
 
 Server:
   run [--port=N] [--loglevel=N] [--debug]

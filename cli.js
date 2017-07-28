@@ -39,6 +39,7 @@ const eslint = require('eslint');
 
 const opkg = require('./packages.js');
 const ocfg = require('./configuration.js');
+const oweb = require('./webconfig.js');
 const outils = require('./utils.js');
 
 const ROOT = process.env.OSJS_ROOT || path.dirname(process.argv[1]);
@@ -290,6 +291,10 @@ const tasks = {
 
   'generate:package': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
     return opkg.generatePackage(cfg, cli, ygor);
+  }),
+
+  'generate:config': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
+    return oweb.generateWebconfig(cfg, cli, ygor);
   }),
 
   'help': () => {
