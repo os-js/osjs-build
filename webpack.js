@@ -214,11 +214,11 @@ const findThemeFile = (cfg, base, name, filename) => {
 };
 
 const getStyleFile = (cfg, style) => {
-  return findThemeFile(cfg, 'client/themes/styles', style, 'style.less');
+  return findThemeFile(cfg, 'themes/styles', style, 'style.less');
 };
 
 const getFontFile = (cfg, font) => {
-  return findThemeFile(cfg, 'client/themes/fonts', font, 'style.css');
+  return findThemeFile(cfg, 'themes/fonts', font, 'style.css');
 };
 
 const getThemeFiles = (cfg) => {
@@ -294,9 +294,9 @@ const createConfiguration = (options) => new Promise((resolve, reject) => {
 
   ocfg.readConfigurationTree().then((cfg) => {
     resolve({
-      cfg: cfg,
+      settings: cfg,
       options: options,
-      webpack: {
+      config: {
         plugins: getPlugins(cfg, options),
         devtool: options.devtool,
 
@@ -393,8 +393,8 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
     };
 
     createConfiguration(options).then((result) => {
-      const publicPath = result.cfg.build.webpack.output.publicPath || '';
-      const wcfg = outils.mergeObject(result.webpack, {
+      const publicPath = result.settings.build.webpack.output.publicPath || '';
+      const wcfg = outils.mergeObject(result.config, {
         resolve: {
           modules: [
             outils.fixWinPath(path.resolve(ROOT, 'node_modules')),
@@ -429,8 +429,8 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
       });
 
       resolve({
-        cfg: result.cfg,
-        webpack: wcfg
+        settings: result.settings,
+        config: wcfg
       });
     }).catch(reject);
   }).catch(reject);
@@ -445,13 +445,13 @@ const createCoreConfiguration = (options) => new Promise((resolve, reject) => {
   options.exclude = /node_modules\/(?![axios|bluebird])/;
 
   createConfiguration(options).then((result) => {
-    let {cfg, webpack, options} = result;
+    let {settings, config, options} = result;
 
     if ( options.verbose ) {
       console.log('Build options', JSON.stringify(options));
     }
 
-    const webpackConfig = Object.assign({}, cfg.build.webpack);
+    const webpackConfig = Object.assign({}, settings.build.webpack);
     if ( options.debug ) {
       webpackConfig.entry.test = [
         getAbsolute('node_modules/mocha/mocha.js'),
@@ -460,21 +460,25 @@ const createCoreConfiguration = (options) => new Promise((resolve, reject) => {
       ];
     }
 
-    const finalConfig = resolveConfiguration(result.cfg, webpackConfig, webpack);
+    const finalConfig = resolveConfiguration(result.settings, webpackConfig, config);
 
     finalConfig.plugins.push(new HtmlWebpackPlugin({
-      template: getTemplateFile(cfg, cfg.build.template, 'index.ejs'),
-      osjs: getIndexIncludes(cfg)
+      template: getTemplateFile(settings, settings.build.template, 'index.ejs'),
+      osjs: getIndexIncludes(settings)
     }));
 
     finalConfig.plugins.push(new FaviconsWebpackPlugin(
-      getTemplateFile(cfg, cfg.build.template, 'favicon.png')
+      getTemplateFile(settings, settings.build.template, 'favicon.png')
     ));
 
-    finalConfig.plugins.push(new CopyWebpackPlugin(getStaticFiles(cfg), {
+    finalConfig.plugins.push(new CopyWebpackPlugin(getStaticFiles(settings), {
       ignore: [
         '*.less'
       ]
+    }));
+
+    finalConfig.plugins.push(new Webpack.optimize.CommonsChunkPlugin({
+      name: 'common'
     }));
 
     if ( options.clean ) {
@@ -488,8 +492,8 @@ const createCoreConfiguration = (options) => new Promise((resolve, reject) => {
     }
 
     resolve({
-      cfg: result.cfg,
-      webpack: finalConfig
+      settings: result.settings,
+      config: finalConfig
     });
   }).catch(reject);
 });
@@ -502,9 +506,9 @@ const createThemeConfiguration = (options) => new Promise((resolve, reject) => {
   options = options || {};
 
   createConfiguration(options).then((result) => {
-    let {cfg, webpack} = result;
+    let {settings, config} = result;
 
-    let files = findThemeFolders(cfg, 'client/themes/wallpapers').map((f) => {
+    let files = findThemeFolders(settings, 'themes/wallpapers').map((f) => {
       return {
         context: getAbsolute(f),
         from: '*',
@@ -518,39 +522,39 @@ const createThemeConfiguration = (options) => new Promise((resolve, reject) => {
       };
     };
 
-    files = files.concat(cfg.build.static.filter(outils.getFiltered).map(mapAbsolute));
-    Object.keys(cfg.build.overlays).forEach((name) => {
-      const ol = cfg.build.overlays[name];
+    files = files.concat(settings.build.static.filter(outils.getFiltered).map(mapAbsolute));
+    Object.keys(settings.build.overlays).forEach((name) => {
+      const ol = settings.build.overlays[name];
       files = files.concat(ol.static.filter(outils.getFiltered).map(mapAbsolute));
     });
 
-    files = files.concat(cfg.themes.styles.map((i) => {
+    files = files.concat(settings.themes.styles.map((i) => {
       return {
-        from: findThemeFile(cfg, 'client/themes/styles', i, 'theme.js'),
+        from: findThemeFile(settings, 'themes/styles', i, 'theme.js'),
         to: 'themes/styles/' + i
       };
     }));
 
-    files = files.concat(cfg.themes.icons.map((i) => {
+    files = files.concat(settings.themes.icons.map((i) => {
       return {
-        from: findThemeFile(cfg, 'client/themes/icons', i, ''),
+        from: findThemeFile(settings, 'themes/icons', i, ''),
         to: 'themes/icons/' + i
       };
     }));
 
-    files = files.concat(cfg.themes.sounds.map((i) => {
+    files = files.concat(settings.themes.sounds.map((i) => {
       return {
-        from: findThemeFile(cfg, 'client/themes/sounds', i, ''),
+        from: findThemeFile(settings, 'themes/sounds', i, ''),
         to: 'themes/sounds/' + i
       };
     }));
 
-    const webpackConfig = Object.assign({}, cfg.build.webpack);
+    const webpackConfig = Object.assign({}, settings.build.webpack);
     webpackConfig.entry = {
-      themes: getThemeFiles(cfg)
+      themes: getThemeFiles(settings)
     };
 
-    const finalConfig = resolveConfiguration(result.cfg, webpackConfig, webpack);
+    const finalConfig = resolveConfiguration(result.settings, webpackConfig, config);
 
     if ( options.clean ) {
       finalConfig.plugins.push(new CleanWebpackPlugin([
@@ -574,8 +578,8 @@ const createThemeConfiguration = (options) => new Promise((resolve, reject) => {
     });
 
     resolve({
-      cfg: result.cfg,
-      webpack: finalConfig
+      settings: result.settings,
+      config: finalConfig
     });
   }).catch(reject);
 });
