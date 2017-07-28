@@ -405,7 +405,7 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
         entry: packageEntry,
 
         output: {
-          publicPath: publicPath + 'packages/' + metadata.path,
+          publicPath: publicPath + 'packages/' + metadata.path + '/',
           path: outils.fixWinPath(dest)
         },
 
