@@ -478,7 +478,15 @@ const createCoreConfiguration = (options) => new Promise((resolve, reject) => {
     }));
 
     finalConfig.plugins.push(new Webpack.optimize.CommonsChunkPlugin({
-      name: 'common'
+      name: 'common',
+      chunks: ['osjs', 'locales'],
+      minChunks: (m) => {
+        const context = m.context;
+        if ( typeof context !== 'string' ) {
+          return false;
+        }
+        return context.indexOf('node_modules') !== -1;
+      }
     }));
 
     if ( options.clean ) {
