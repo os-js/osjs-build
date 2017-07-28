@@ -34,6 +34,8 @@ const path = require('path');
 
 const ROOT = process.env.OSJS_ROOT || path.dirname(process.argv[1]);
 const ISWIN = /^win/.test(process.platform);
+const DEBUG = process.env.OSJS_DEBUG ===  'true';
+const STANDALONE = process.env.OSJS_STANDALONE === 'true';
 
 ///////////////////////////////////////////////////////////////////////////////
 // HELPERS
@@ -109,6 +111,24 @@ function getPackagePaths(cfg, repo) {
 }
 
 /**
+ * Gets filtered file
+ * @param {String} i Filename
+ * @return {Boolean}
+ */
+function getFiltered(i) {
+  if ( i.match(/^dev:/) && !DEBUG ) {
+    return false;
+  }
+  if ( i.match(/^prod:/) && DEBUG ) {
+    return false;
+  }
+  if ( i.match(/^standalone:/) && !STANDALONE ) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Merges two objects together (deep merge)
  * @param {Object} into Into this object
  * @param {Object} from From this object
@@ -174,6 +194,19 @@ const fixWinPath = (str, slashes) => {
   return str;
 };
 
+const findFile = (cfg, filename) => {
+  const overlays = cfg.overlays || [];
+  const tries = ([
+    path.join(ROOT, 'src', filename)
+  ]).concat(overlays.map((o) => {
+    return path.resolve(ROOT, o, filename);
+  }));
+
+  return tries.find((iter) => {
+    return fs.existsSync(iter);
+  });
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // EXPORTS
 ///////////////////////////////////////////////////////////////////////////////
@@ -184,5 +217,7 @@ module.exports = {
   checkEnabledState,
   getPackagePaths,
   mergeObject,
-  execWebpack
+  execWebpack,
+  getFiltered,
+  findFile
 };

@@ -136,6 +136,13 @@ const tasks = {
     ]);
   }),
 
+  'build:themes': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
+    console.info('Building', colors.blue('themes'));
+
+    const dir = path.resolve(ROOT, 'src/client/themes');
+    return outils.execWebpack(cli, ygor, dir, '--progress');
+  }),
+
   'build:manifest': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
     console.info('Building', colors.blue('manifest'));
     return Promise.all([
@@ -156,13 +163,15 @@ const tasks = {
   'build:core': (cli, ygor) => {
     console.info('Building', colors.blue('core'));
 
-    return outils.execWebpack(cli, ygor, ROOT, '--progress');
+    const dir = path.resolve(ROOT, 'src/client');
+    return outils.execWebpack(cli, ygor, dir, '--progress');
   },
 
   'build': (cli, ygor) => {
     const tasks = [
       'build:config',
       'build:manifest',
+      'build:themes',
       'build:core',
       'build:packages'
     ];
@@ -185,8 +194,14 @@ const tasks = {
       });
     }
 
+    if ( cli.themes ) {
+      console.info('Starting', colors.blue('watch'), 'for', colors.green('themes'));
+      const dir = path.resolve(ROOT, 'src/client/themes');
+      return outils.execWebpack(cli, ygor, dir, '--watch');
+    }
+
     console.info('Starting', colors.blue('watch'));
-    return outils.execWebpack(cli, ygor, ROOT, '--watch');
+    return outils.execWebpack(cli, ygor, path.resolve(ROOT, 'src/client'), '--watch');
   },
 
   'eslint': () => {

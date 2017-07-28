@@ -13,7 +13,8 @@ Building:
   build [--debug] [--clean]
   build:config
   build:manifest
-  build:core [--debug] [--clean] [--no-assets]
+  build:core [--debug] [--clean]
+  build:themes [--debug] [--clean]
   build:package --name=NAME [--debug] [--clean]
   build:packages [--debug] [--clean] [--repositories=]
 

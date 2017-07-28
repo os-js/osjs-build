@@ -31,8 +31,12 @@
 const Webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const qs = require('querystring');
+const fs = require('fs-extra');
 const path = require('path');
 const ocfg = require('./configuration.js');
 const opkg = require('./packages.js');
@@ -92,28 +96,6 @@ function getPlugins(cfg, options) {
     new ExtractTextPlugin('[name].css')
   ];
 
-  if ( options.clean ) {
-    if ( options.package ) {
-      const packageRoot = path.dirname(options.package);
-
-      plugins.unshift(new CleanWebpackPlugin([
-        path.basename(packageRoot)
-      ], {
-        root: path.dirname(packageRoot),
-        exclude: []
-      }));
-    } else {
-      plugins.unshift(new CleanWebpackPlugin([
-        'dist/themes',
-        'dist/*.*'
-      ], {
-        root: ROOT,
-        verbose: options.verbose,
-        exclude: ['packages', 'vendor', '.htaccess', '.gitignore']
-      }));
-    }
-  }
-
   if ( options.minimize ) {
     plugins.push(new Webpack.optimize.UglifyJsPlugin({
       comments: /@preserve/,
@@ -170,7 +152,124 @@ function parseOptions(inp) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// API
+// ASSETS
+///////////////////////////////////////////////////////////////////////////////
+
+const fixPath = (iter) => iter.replace(/^(dev|prod|standalone):/, '');
+const getAbsolute = (filename) => path.resolve(ROOT, filename);
+
+const getTemplateFile = (cfg, tpl, filename) => {
+  return outils.findFile(cfg, path.join('templates/dist', tpl, filename));
+};
+
+const getIndexIncludes = (cfg) => {
+  const result = {
+    scripts: cfg.build.includes.scripts,
+    styles: cfg.build.includes.styles
+  };
+
+  const overlays = cfg.build.overlays || {};
+  Object.keys(overlays).forEach((n) => {
+    const ol = overlays[n];
+    if ( ol.includes ) {
+      Object.keys(ol.includes).forEach((k) => {
+        result[k] = result[k].concat(ol.includes[k]);
+      });
+    }
+  });
+
+  return {
+    scripts: result.scripts.filter(outils.getFiltered).map(fixPath),
+    styles: result.styles.filter(outils.getFiltered).map(fixPath)
+  };
+};
+
+const getStaticFiles = (cfg) => {
+  const mapAbsolute = (i) => {
+    return {
+      from: getAbsolute(fixPath(i))
+    };
+  };
+
+  let files = cfg.build.static.filter(outils.getFiltered).map(mapAbsolute);
+  Object.keys(cfg.build.overlays).forEach((name) => {
+    const ol = cfg.build.overlays[name];
+    files = files.concat(ol.static.filter(outils.getFiltered).map(mapAbsolute));
+  });
+
+  return files;
+};
+
+const findThemeFolders = (cfg, base) => {
+  const overlays = cfg.overlays || [];
+  return ([
+    path.join(ROOT, 'src', base)
+  ]).concat(overlays.map((o) => {
+    return path.resolve(ROOT, o, base);
+  })).filter((iter) => fs.existsSync(iter));
+};
+
+const findThemeFile = (cfg, base, name, filename) => {
+  return outils.findFile(cfg, path.join(base, name, filename));
+};
+
+const getStyleFile = (cfg, style) => {
+  return findThemeFile(cfg, 'client/themes/styles', style, 'style.less');
+};
+
+const getFontFile = (cfg, font) => {
+  return findThemeFile(cfg, 'client/themes/fonts', font, 'style.css');
+};
+
+const getThemeFiles = (cfg) => {
+  let files = [];
+  files = files.concat(cfg.themes.fonts.map((f) => getFontFile(cfg, f)));
+  files = files.concat(cfg.themes.styles.map((f) => getStyleFile(cfg, f)));
+
+  return files.filter((f) => !!f);
+};
+
+const resolveConfiguration = (cfg, input, webpack, useOverlays) => {
+  Object.keys(input.entry).forEach((k) => {
+    input.entry[k] = input.entry[k]
+      .filter(outils.getFiltered)
+      .map(fixPath)
+      .map(getAbsolute)
+      .map(outils.fixWinPath);
+  });
+
+  // Overlays
+  if ( useOverlays ) {
+    Object.keys(cfg.build.overlays).forEach((name) => {
+      const ol = cfg.build.overlays[name];
+      const wp = ol.input;
+      if ( wp ) {
+        if ( wp.resolve && wp.resolve.modules ) {
+          input.resolve.modules = input.resolve.modules.concat(wp.resolve.modules);
+        }
+        if ( wp.entry ) {
+          Object.keys(wp.entry).forEach((en) => {
+            if ( input.entry[en] ) {
+              input.entry[en] = input.entry[en].concat(wp.entry[en]);
+            } else {
+              input.entry[en] = wp.entry[en];
+            }
+          });
+        }
+      }
+    });
+  }
+
+  // Fixes "not an absolute path" problem in Webpack
+  const finalConfig = outils.mergeObject(webpack, input);
+  finalConfig.output.path = path.resolve(finalConfig.output.path);
+  finalConfig.resolve.modules = finalConfig.resolve.modules.map(outils.fixWinPath);
+
+  return finalConfig;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// BASE CONFIGURATION
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -277,16 +376,10 @@ const createConfiguration = (options) => new Promise((resolve, reject) => {
   }).catch(reject);
 });
 
-/**
- * Creates base Webpack configuration for OS.js Packages
- * @param {String} metadataFile The metadata path of package
- * @param {Object} options Options
- * @param {Boolean} [options.debug] Debug mode
- * @param {Boolean} [options.minimize] Minimize output
- * @param {Boolean} [options.sourcemaps] Generate source maps
- * @param {String} [options.devtool] Specify devtool
- * @return {Promise}
- */
+///////////////////////////////////////////////////////////////////////////////
+// PACKAGE CONFIGURATION
+///////////////////////////////////////////////////////////////////////////////
+
 const createPackageConfiguration = (metadataFile, options) => new Promise((resolve, reject) => {
   options = options || {};
   options.package = metadataFile;
@@ -320,6 +413,15 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
         }
       });
 
+      if ( options.clean ) {
+        wcfg.plugins.push(new CleanWebpackPlugin([
+          path.basename(packageRoot)
+        ], {
+          root: path.dirname(packageRoot),
+          exclude: []
+        }));
+      }
+
       wcfg.module.loaders.push({
         test: /((\w+)\.(eot|svg|ttf|woff|woff2))$/,
         loader: 'file-loader?name=[name].[ext]'
@@ -334,10 +436,156 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
 });
 
 ///////////////////////////////////////////////////////////////////////////////
+// CORE CONFIGURATION
+///////////////////////////////////////////////////////////////////////////////
+
+const createCoreConfiguration = (options) => new Promise((resolve, reject) => {
+  options = options || {};
+  options.exclude = /node_modules\/(?![axios|bluebird])/;
+
+  createConfiguration(options).then((result) => {
+    let {cfg, webpack, options} = result;
+
+    if ( options.verbose ) {
+      console.log('Build options', JSON.stringify(options));
+    }
+
+    const webpackConfig = Object.assign({}, cfg.build.webpack);
+    if ( options.debug ) {
+      webpackConfig.entry.test = [
+        getAbsolute('node_modules/mocha/mocha.js'),
+        getAbsolute('node_modules/mocha/mocha.css'),
+        getAbsolute('src/client/test/test.js')
+      ];
+    }
+
+    const finalConfig = resolveConfiguration(result.cfg, webpackConfig, webpack);
+
+    finalConfig.plugins.push(new HtmlWebpackPlugin({
+      template: getTemplateFile(cfg, cfg.build.template, 'index.ejs'),
+      osjs: getIndexIncludes(cfg)
+    }));
+
+    finalConfig.plugins.push(new FaviconsWebpackPlugin(
+      getTemplateFile(cfg, cfg.build.template, 'favicon.png')
+    ));
+
+    finalConfig.plugins.push(new CopyWebpackPlugin(getStaticFiles(cfg), {
+      ignore: [
+        '*.less'
+      ]
+    }));
+
+    if ( options.clean ) {
+      finalConfig.plugins.push(new CleanWebpackPlugin([
+        'dist/*.*'
+      ], {
+        root: ROOT,
+        verbose: options.verbose,
+        exclude: ['themes', 'packages', 'vendor', '.htaccess', '.gitignore']
+      }));
+    }
+
+    resolve({
+      cfg: result.cfg,
+      webpack: finalConfig
+    });
+  }).catch(reject);
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// THEME CONFIGURATION
+///////////////////////////////////////////////////////////////////////////////
+
+const createThemeConfiguration = (options) => new Promise((resolve, reject) => {
+  options = options || {};
+
+  createConfiguration(options).then((result) => {
+    let {cfg, webpack} = result;
+
+    let files = findThemeFolders(cfg, 'client/themes/wallpapers').map((f) => {
+      return {
+        context: getAbsolute(f),
+        from: '*',
+        to: 'themes/wallpapers'
+      };
+    });
+
+    const mapAbsolute = (i) => {
+      return {
+        from: getAbsolute(fixPath(i))
+      };
+    };
+
+    files = files.concat(cfg.build.static.filter(outils.getFiltered).map(mapAbsolute));
+    Object.keys(cfg.build.overlays).forEach((name) => {
+      const ol = cfg.build.overlays[name];
+      files = files.concat(ol.static.filter(outils.getFiltered).map(mapAbsolute));
+    });
+
+    files = files.concat(cfg.themes.styles.map((i) => {
+      return {
+        from: findThemeFile(cfg, 'client/themes/styles', i, 'theme.js'),
+        to: 'themes/styles/' + i
+      };
+    }));
+
+    files = files.concat(cfg.themes.icons.map((i) => {
+      return {
+        from: findThemeFile(cfg, 'client/themes/icons', i, ''),
+        to: 'themes/icons/' + i
+      };
+    }));
+
+    files = files.concat(cfg.themes.sounds.map((i) => {
+      return {
+        from: findThemeFile(cfg, 'client/themes/sounds', i, ''),
+        to: 'themes/sounds/' + i
+      };
+    }));
+
+    const webpackConfig = Object.assign({}, cfg.build.webpack);
+    webpackConfig.entry = {
+      themes: getThemeFiles(cfg)
+    };
+
+    const finalConfig = resolveConfiguration(result.cfg, webpackConfig, webpack);
+
+    if ( options.clean ) {
+      finalConfig.plugins.push(new CleanWebpackPlugin([
+        'dist/themes'
+      ], {
+        root: ROOT,
+        verbose: options.verbose,
+        exclude: ['packages', 'vendor', '.htaccess', '.gitignore']
+      }));
+    }
+
+    finalConfig.plugins.push(new CopyWebpackPlugin(files, {
+      ignore: [
+        '*.less'
+      ]
+    }));
+
+    finalConfig.module.loaders.push({
+      test: /((\w+)\.(eot|svg|ttf|woff|woff2))$/,
+      loader: 'file-loader?name=themes/fonts/[name].[ext]'
+    });
+
+    resolve({
+      cfg: result.cfg,
+      webpack: finalConfig
+    });
+  }).catch(reject);
+});
+
+///////////////////////////////////////////////////////////////////////////////
 // EXPORTS
 ///////////////////////////////////////////////////////////////////////////////
 
 module.exports = {
   createConfiguration,
-  createPackageConfiguration
+  createCoreConfiguration,
+  createPackageConfiguration,
+  createThemeConfiguration
 };
