@@ -405,6 +405,7 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
         resolve: {
           modules: [
             outils.fixWinPath(path.resolve(ROOT, 'node_modules')),
+            outils.fixWinPath(path.resolve(packageRoot, 'node_modules')),
             outils.fixWinPath(packageRoot)
           ]
         },
@@ -440,6 +441,7 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
       });
 
       resolve({
+        destination: root,
         settings: result.settings,
         config: wcfg
       });
