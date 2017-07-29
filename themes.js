@@ -46,7 +46,7 @@ const ROOT = process.env.OSJS_ROOT || path.dirname(process.argv[1]);
  * @return {Promise}
  */
 const readMetadataFrom = (dir, whitelist, isFont) => new Promise((resolve, reject) => {
-  const basePath = path.join(ROOT, 'src', 'client', 'themes');
+  const basePath = path.join(ROOT, 'src', 'themes');
   whitelist = whitelist || [];
 
   if ( isFont ) {
