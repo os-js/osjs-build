@@ -414,8 +414,10 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
         output: {
           publicPath: publicPath,
           path: outils.fixWinPath(dest),
-          sourceMapFilename: root + options.outputSourceMap,
-          filename: root + options.outputFileName
+          //sourceMapFilename: root + options.outputSourceMap,
+          //filename: root + options.outputFileName
+          sourceMapFilename: options.outputSourceMap,
+          filename: options.outputFileName
         },
 
         externals: {
