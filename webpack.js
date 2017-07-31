@@ -440,7 +440,8 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
       if ( buildEntry.copy ) {
         const cpy = buildEntry.copy instanceof Array ? buildEntry.copy.map((f) => {
           return {
-            from: path.resolve(packageRoot, f)
+            from: path.resolve(packageRoot, f),
+            to: f
           };
         }) : buildEntry.copy;
 
