@@ -284,6 +284,12 @@ const resolveConfiguration = (cfg, input, webpack, useOverlays) => {
 const createConfiguration = (options) => new Promise((resolve, reject) => {
   options = parseOptions(options);
 
+  const babelOptions = Object.assign({
+    presets: ['es2015'],
+    cacheDirectory: true,
+    plugins: []
+  }, options.babelOptions || {});
+
   const cssLoader = {
     loader: 'css-loader',
     options: {
@@ -334,16 +340,11 @@ const createConfiguration = (options) => new Promise((resolve, reject) => {
               loader: 'html-loader'
             },
             {
-              test: /\.js$/,
+              test: /\.jsx?$/,
               exclude: options.exclude,
               use: {
                 loader: 'babel-loader',
-                options: {
-                  'presets': ['es2015'],
-                  cacheDirectory: true,
-                  plugins: [
-                  ]
-                }
+                options: babelOptions
               }
             },
             {
