@@ -389,6 +389,7 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
 
   opkg.readMetadataFile(metadataFile).then((metadata) => {
     const dest = path.join(ROOT, 'dist/packages', metadata.path);
+    const buildEntry = metadata.build || {};
 
     const packageRoot = path.dirname(metadataFile);
     const packageEntry = {
@@ -433,6 +434,17 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
           root: path.dirname(packageRoot),
           exclude: []
         }));
+      }
+
+      if ( buildEntry.copy ) {
+        const cpy = buildEntry.copy instanceof Array ? buildEntry.copy.map((f) => {
+          return {
+            from: path.resolve(packageRoot, f)
+          };
+        }) : buildEntry.copy;
+
+        console.log(cpy)
+        wcfg.plugins.push(new CopyWebpackPlugin(cpy, buildEntry.copyCoptions || {}));
       }
 
       wcfg.module.loaders.push({
