@@ -27,6 +27,7 @@
  * @author  Anders Evenrud <andersevenrud@gmail.com>
  * @licence Simplified BSD License
  */
+require('graceful-fs').gracefulify(require('fs'));
 
 module.exports = {
   cli: require('./cli.js'),
