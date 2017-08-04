@@ -319,7 +319,9 @@ const buildClientConfiguration = (cfg, cli) => new Promise((resolve, reject) => 
   }
 
   if ( cli.option('standalone') ) {
-    settings.Connection.Type = 'standalone';
+    settings.Connection.Connection = 'standalone';
+    settings.Connection.Authenticator = 'standalone';
+    settings.Connection.Storage = 'standalone';
   }
 
   settings.Debug = cli.option('debug') === true;
