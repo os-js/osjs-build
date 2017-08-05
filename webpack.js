@@ -445,7 +445,6 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
           };
         }) : buildEntry.copy;
 
-        console.log(cpy)
         wcfg.plugins.push(new CopyWebpackPlugin(cpy, buildEntry.copyCoptions || {}));
       }
 

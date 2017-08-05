@@ -33,5 +33,7 @@ Generation tasks:
   generate:config --type=TYPE --env=ENV --out=DEST
 
 Misc tasks:
+  eslint
+  mocha
   run [--port=N] [--loglevel=0,1,2]
   watch [--package=REPO/NAME] [--themes]
