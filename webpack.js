@@ -393,9 +393,11 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
     const buildEntry = metadata.build || {};
 
     const packageRoot = path.dirname(metadataFile);
-    const packageEntry = {
-      main: metadata.preload.map((preload) => outils.fixWinPath(preload.src))
-    };
+
+    let packageEntry = metadata.main ? metadata.main.webpack : [];
+    if ( !(packageEntry instanceof Array) || !packageEntry.length ) {
+      packageEntry = ['main.js', 'main.css'];
+    }
 
     createConfiguration(options).then((result) => {
       options = result.options;
@@ -439,11 +441,11 @@ const createPackageConfiguration = (metadataFile, options) => new Promise((resol
 
       if ( buildEntry.copy ) {
         const cpy = buildEntry.copy instanceof Array ? buildEntry.copy.map((f) => {
-          return {
+          return typeof f === 'string' ? {
             from: path.resolve(packageRoot, f),
             to: f
-          };
-        }) : buildEntry.copy;
+          } : f;
+        }) : [];
 
         wcfg.plugins.push(new CopyWebpackPlugin(cpy, buildEntry.copyCoptions || {}));
       }
