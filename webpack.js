@@ -489,10 +489,13 @@ const createCoreConfiguration = (options) => new Promise((resolve, reject) => {
     }
 
     const finalConfig = resolveConfiguration(result.settings, webpackConfig, config);
+    const chunkOrder = ['polyfill', 'common', 'test', 'locales', 'osjs'];
 
     finalConfig.plugins.push(new HtmlWebpackPlugin({
       template: getTemplateFile(settings, settings.build.template, 'index.ejs'),
-      osjs: getIndexIncludes(settings)
+      osjs: getIndexIncludes(settings),
+      //chunks: chunkOrder,
+      chunksSortMode: (a, b) => chunkOrder.indexOf(a.names[0]) - chunkOrder.indexOf(b.names[0])
     }));
 
     finalConfig.plugins.push(new FaviconsWebpackPlugin(
