@@ -1,6 +1,6 @@
 {
   "name": "osjs-build",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "OS.js Build System",
   "url": "https://www.os-js.org",
   "email": "andersevenrud@gmail.com",
@@ -42,7 +42,7 @@
     "glob": "^7.1.2",
     "glob-promise": "^3.1.0",
     "graceful-fs": "^4.1.11",
-    "html-loader": "git+https://github.com/nuragic/html-loader.git#ea095e3d1fdf8b82c6fc12e0baf736715b8b99ee",
+    "html-loader": "^0.5.1",
     "html-webpack-plugin": "^2.29.0",
     "less": "^2.7.2",
     "less-loader": "^4.0.4",
