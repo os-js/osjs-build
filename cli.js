@@ -288,9 +288,9 @@ const tasks = {
   'run': () => {
     console.info('Starting', colors.blue('server'));
 
-    const exe = path.join(ROOT, 'src', 'server', 'node', 'server.js');
+    const exe = path.resolve(ROOT, 'src/server/node/server.js');
     const args = process.argv.slice(2).join(' ');
-    return ygor.shell(['node', exe, args].join(' '));
+    return ygor.shell(['node', '"' + exe + '"', args].join(' '));
   },
 
   'generate:package': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
@@ -302,7 +302,7 @@ const tasks = {
   }),
 
   'help': () => {
-    console.log(fs.readFileSync(path.join(__dirname, 'help.txt'), 'utf-8'));
+    console.log(fs.readFileSync(path.resolve(__dirname, 'help.txt'), 'utf-8'));
     return true;
   }
 
