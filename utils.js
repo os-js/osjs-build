@@ -187,7 +187,8 @@ const fixWinPath = (str, slashes) => {
     str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
     if ( slashes ) {
-      str = str.replace(/(["\s'$`\\])/g, '\\$1').replace(/\\+/g, '/');
+      //str = str.replace(/(["\s'$`\\])/g, '\\$1').replace(/\\+/g, '/');
+      str = str.replace(/\\/g, '/');
     }
   }
 
