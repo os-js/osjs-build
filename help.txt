@@ -3,7 +3,7 @@ OS.js Task and Build system
 Copyright (c) 2011-2017 Anders Evenrud <andersevenrud@gmail.com>
 
 Common flags:
-  --debug           Enabled extended debug support (faster build)
+  --debug           Enable extended debug support
   --clean           Cleans up destination before building
   --no-minimize     Do not minimize, even without --debug
   --no-sourcemaps   Do not generate sourcemaps

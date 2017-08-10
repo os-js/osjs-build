@@ -324,9 +324,6 @@ const buildClientConfiguration = (cfg, cli) => new Promise((resolve, reject) => 
     settings.Connection.Storage = 'standalone';
   }
 
-  settings.Debug = cli.option('debug') === true;
-  settings.Broadway = cfg.broadway;
-
   othemes.getMetadata(cfg, cli).then((themes) => {
     settings.Fonts.list = themes.fonts.concat(settings.Fonts.list);
     settings.Styles = themes.styles;

@@ -93,7 +93,10 @@ function getPlugins(cfg, options) {
       banner: BANNER,
       raw: true
     }),
-    new ExtractTextPlugin('[name].css')
+    new ExtractTextPlugin('[name].css'),
+    new Webpack.DefinePlugin({
+      OSJS_DEBUG: !!options.debug
+    })
   ];
 
   if ( options.minimize ) {
