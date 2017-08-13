@@ -1,6 +1,6 @@
 {
   "name": "osjs-build",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "OS.js Build System",
   "url": "https://www.os-js.org",
   "email": "andersevenrud@gmail.com",
@@ -48,7 +48,7 @@
     "less-loader": "^4.0.4",
     "mocha": "^3.4.2",
     "osjs-scheme-loader": "^1.0.9",
-    "simplejsonconf": "^1.0.6",
+    "simplejsonconf": "^1.0.7",
     "style-loader": "^0.18.2",
     "webpack": "^3.4.1",
     "ygor": "^4.0.4"
