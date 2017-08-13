@@ -315,7 +315,7 @@ module.exports = function() {
     string: 'value'
   });
 
-  Object.keys(tasks).forEach((name) => ygor.task(name, function() {
-    return tasks[name].call(this, cli);
+  Object.keys(tasks).forEach((name) => ygor.task(name, function(c, y) {
+    return tasks[name].call(this, cli, y);
   }));
 };
