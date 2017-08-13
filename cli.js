@@ -36,6 +36,7 @@ const fs = require('fs-extra');
 const Mocha = require('mocha');
 const glob = require('glob-promise');
 const eslint = require('eslint');
+const minimist = require('minimist');
 
 const opkg = require('./packages.js');
 const ocfg = require('./configuration.js');
@@ -309,5 +310,12 @@ const tasks = {
 };
 
 module.exports = function() {
-  Object.keys(tasks).forEach((name) => ygor.task(name, tasks[name]));
+  // Override the Ygor minimist handling
+  const cli = minimist(process.argv.slice(2), {
+    string: 'value'
+  });
+
+  Object.keys(tasks).forEach((name) => ygor.task(name, function() {
+    return tasks[name].call(this, cli);
+  }));
 };
