@@ -104,7 +104,11 @@ function getPlugins(cfg, options) {
       comments: /@preserve/,
       minimize: true,
       rebase: false,
-      sourceMap: options.sourcemaps === true
+      sourceMap: options.sourcemaps === true,
+      compress: {
+        warnings: options.debug === true,
+        drop_console: options.debug !== true
+      }
     }));
   }
 
