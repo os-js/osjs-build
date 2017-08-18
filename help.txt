@@ -2,6 +2,10 @@ OS.js Task and Build system
 
 Copyright (c) 2011-2017 Anders Evenrud <andersevenrud@gmail.com>
 
+Notes:
+
+To pass on arguments to webpack, use `node osjs build -- --webpack-argument=value`
+
 Common flags:
   --debug           Enable extended debug support
   --clean           Cleans up destination before building

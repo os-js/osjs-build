@@ -46,6 +46,20 @@ const outils = require('./utils.js');
 const ROOT = process.env.OSJS_ROOT || path.dirname(process.argv[1]);
 const DEBUG = process.argv.indexOf('--debug') !== -1;
 
+const getDefaultWebpackArgs = (cli) => {
+  let args = [];
+
+  if ( cli._ ) {
+    args = cli._.slice(1);
+  }
+
+  if ( !args.length ) {
+    args = ['--progress', '--hide-modules'];
+  }
+
+  return args.join(' ');
+};
+
 /**
  * Wrapper for CLI object
  * @param {Object} cli CLI
@@ -146,7 +160,7 @@ const tasks = {
     console.info('Building', colors.blue('themes'));
 
     const dir = path.resolve(ROOT, 'src/themes');
-    return outils.execWebpack(cli, ygor, dir, '--progress');
+    return outils.execWebpack(cli, ygor, dir, getDefaultWebpackArgs(cli));
   }),
 
   'build:manifest': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
@@ -170,7 +184,7 @@ const tasks = {
     console.info('Building', colors.blue('core'));
 
     const dir = path.resolve(ROOT, 'src/client');
-    return outils.execWebpack(cli, ygor, dir, '--progress');
+    return outils.execWebpack(cli, ygor, dir, getDefaultWebpackArgs(cli));
   },
 
   'build': (cli, ygor) => {
