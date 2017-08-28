@@ -165,7 +165,8 @@ const mergeObject = (into, from) => {
 const execWebpack = (cli, ygor, cwd, params) => {
   params = params || '';
 
-  return ygor.shell('webpack' + (params ? ' ' + params : ''), {
+  const wp = path.resolve(ROOT, 'node_modules/.bin/webpack');
+  return ygor.shell(wp + (params ? ' ' + params : ''), {
     cwd: cwd,
     env: {
       OSJS_OPTIONS: qs.stringify(cli),
