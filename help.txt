@@ -30,6 +30,7 @@ Configuration tasks:
   config:add --name=NAME --key=KEY --value=VALUE
   config:remove --name=NAME --value=VALUE
   config:remove --name=NAME --key=KEY
+  config:create [--key=KEY] [--out=FILE]
   config:mount --name=NAME --description=DESC --path=PATH [--ro] [--transport=NAME]
 
 Generation tasks:

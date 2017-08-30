@@ -138,6 +138,16 @@ const tasks = {
     }).catch(reject);
   }),
 
+  'config:create': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
+    const key = cli.option('key') || null;
+    const out = path.resolve(ROOT, cli.option('out', 'src/conf/900-custom.json'));
+
+    ocfg.createConfiguration(cfg, key, out).then(() => {
+      console.log('Created', out);
+      resolve();
+    }).catch(reject);
+  }),
+
   'config:get': (cli) => newTask(cli, (cli, cfg, resolve, reject) => {
     const name = cli.option('name');
     if ( name ) {

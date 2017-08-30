@@ -96,9 +96,10 @@ function setConfigPath(key, value, isTree, outputFile, guess) {
  * @param {Mixed} value Value
  * @param {String} [importFile] Use this file instead of a value
  * @param {String} [outputFile] Use this output file instead of 900-custom.json
+ * @param {Boolean} [guess] The guessing option in simplejsonconf
  * @return {Promise}
  */
-const setConfiguration = (key, value, importFile, outputFile) => {
+const setConfiguration = (key, value, importFile, outputFile, guess) => {
   key = key || '';
 
   function getNewTree(k, v) {
@@ -132,7 +133,7 @@ const setConfiguration = (key, value, importFile, outputFile) => {
     return Promise.reject('No value given');
   }
 
-  return Promise.resolve(setConfigPath(key, value, false, outputFile));
+  return Promise.resolve(setConfigPath(key, value, false, outputFile, guess));
 };
 
 /**
@@ -215,8 +216,30 @@ const removeConfiguration = (config, query, key, value) => new Promise((resolve,
 });
 
 /**
+ * Creates configuration file entry based on a key
+ *
+ * @param {Object} config Configuration tree
+ * @param {String} key The key
+ * @param {String} out The output file
+ * @return {Promise}
+ */
+const createConfiguration = (config, key, out) => new Promise((resolve, reject) => {
+  if ( !out || !fs.existsSync(path.dirname(out)) ) {
+    return reject(new Error('Invalid output file'));
+  }
+
+  const value = key ? getConfiguration(config, key, {}) : {};
+  if ( typeof value !== 'object' || value instanceof Array ) {
+    return reject('Invalid import key specified');
+  }
+
+  return setConfiguration(key, value, null, out, false);
+});
+
+/**
  * Resolves variables inside the configuration tree
  * @param {Object} object The temporary configuration tree
+ * @param {String} [overlay] The overlay name
  * @return {Object}
  */
 const resolveConfigurationVariables = (object, overlay) => {
@@ -455,6 +478,7 @@ module.exports = {
   addConfiguration,
   addMountpoint,
   removeConfiguration,
+  createConfiguration,
   buildClientConfiguration,
   buildServerConfiguration
 };
